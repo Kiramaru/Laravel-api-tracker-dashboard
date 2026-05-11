@@ -9,7 +9,26 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && docker-php-ext-install pdo pdo_pgsql pdo_mysql zip
 
-# Копируем конфиг Nginx
+# Копируем проект
+COPY . /var/www/html
+WORKDIR /var/www/html
+
+# Установка Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# --- ВАЖНО: СНАЧАЛА СОЗДАЁМ ПАПКИ И ДАЁМ ПРАВА ---
+RUN mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/storage/logs \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# --- ТЕПЕРЬ УСТАНАВЛИВАЕМ ЗАВИСИМОСТИ (ПРАВА УЖЕ ЕСТЬ) ---
+RUN composer install --no-dev --optimize-autoloader
+
+# Конфиг Nginx
 RUN echo 'server { \
     listen 80; \
     server_name _; \
@@ -25,19 +44,5 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/sites-available/default
 
-# Копируем проект
-COPY . /var/www/html
-WORKDIR /var/www/html
-
-# Установка Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Установка зависимостей и настройка
-RUN composer install --no-dev --optimize-autoloader
-
-# Права на папки
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Запуск PHP-FPM и Nginx
+# Запуск
 CMD php-fpm -D && nginx -g "daemon off;"
