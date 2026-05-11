@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-echo "Starting Laravel deployment..."
+echo "=========================================="
+echo "Laravel Deployment Script"
+echo "=========================================="
 
 echo "Installing Composer dependencies..."
 composer install --no-dev --working-dir=/var/www/html
@@ -8,7 +10,7 @@ composer install --no-dev --working-dir=/var/www/html
 echo "Generating application key..."
 php artisan key:generate --force
 
-echo "Clearing old cache..."
+echo "Clearing all cache..."
 php artisan optimize:clear
 
 echo "Caching configuration..."
