@@ -19,6 +19,11 @@ chown -R www-data:www-data /var/www/html/database
 chmod -R 775 /var/www/html/database
 chmod 664 /var/www/html/database/database.sqlite
 
+# === ПРАВА НА СЕССИИ (ВАЖНО ДЛЯ 419) ===
+mkdir -p /var/www/html/storage/framework/sessions
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
 # Создаём .env
 echo "APP_NAME=\"Pokemon Stats Tracker\"" > .env
 echo "APP_ENV=${APP_ENV:-production}" >> .env
