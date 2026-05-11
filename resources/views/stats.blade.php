@@ -4,14 +4,14 @@
     <title>Статистика посещений</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta name="csrf-token" content="<?php echo csrf_token(); ?>">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold">Статистика посещений</h1>
             <form method="POST" action="/logout">
-                <?php echo csrf_field(); ?>
+                @csrf
                 <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Выйти</button>
             </form>
         </div>
@@ -38,66 +38,61 @@
             </div>
         </div>
 
-    <div class="bg-white p-4 rounded shadow mt-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-2xl font-bold flex items-center gap-2">
-                <span>🐱</span>
-                <span>Коллекция покемонов</span>
-            </h2>
-            <span class="text-gray-500">Всего: <?php echo count($pokemons); ?></span>
-        </div>
-    
-        <?php if (count($pokemons) > 0): ?>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                <?php foreach ($pokemons as $pokemon): ?>
-                    <div class="pokemon-card bg-gray-50 rounded-lg p-3 text-center border hover:shadow-lg">
-                        <?php if ($pokemon->image_url): ?>
-                            <img src="<?php echo e($pokemon->image_url); ?>" 
-                                 alt="<?php echo e($pokemon->name); ?>"
-                                 class="w-20 h-20 mx-auto">
-                        <?php else: ?>
-                            <div class="w-20 h-20 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
-                                <span class="text-3xl">🎲</span>
+        <div class="bg-white p-4 rounded shadow mt-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                    <span>🐱</span>
+                    <span>Коллекция покемонов</span>
+                </h2>
+                <span class="text-gray-500">Всего: {{ count($pokemons) }}</span>
+            </div>
+        
+            @if(count($pokemons) > 0)
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    @foreach($pokemons as $pokemon)
+                        <div class="pokemon-card bg-gray-50 rounded-lg p-3 text-center border hover:shadow-lg">
+                            @if($pokemon->image_url)
+                                <img src="{{ $pokemon->image_url }}" 
+                                     alt="{{ $pokemon->name }}"
+                                     class="w-20 h-20 mx-auto">
+                            @else
+                                <div class="w-20 h-20 mx-auto bg-gray-200 rounded-full flex items-center justify-center">
+                                    <span class="text-3xl">🎲</span>
+                                </div>
+                            @endif
+                        
+                            <h3 class="font-bold mt-2 capitalize">{{ $pokemon->name }}</h3>
+                        
+                            <div class="text-xs text-gray-500 mt-1">
+                                <div>ID: {{ $pokemon->pokemon_id }}</div>
+                                @if($pokemon->height)
+                                    <div>Рост: {{ $pokemon->height / 10 }} м</div>
+                                @endif
+                                @if($pokemon->weight)
+                                    <div>Вес: {{ $pokemon->weight / 10 }} кг</div>
+                                @endif
                             </div>
-                        <?php endif; ?>
-                    
-                        <h3 class="font-bold mt-2 capitalize"><?php echo e($pokemon->name); ?></h3>
-                    
-                        <div class="text-xs text-gray-500 mt-1">
-                            <div>ID: <?php echo e($pokemon->pokemon_id); ?></div>
-                            <?php if ($pokemon->height): ?>
-                                <div>Рост: <?php echo e($pokemon->height / 10); ?> м</div>
-                            <?php endif; ?>
-                            <?php if ($pokemon->weight): ?>
-                                <div>Вес: <?php echo e($pokemon->weight / 10); ?> кг</div>
-                            <?php endif; ?>
-                        </div>
-                    
-                        <?php if ($pokemon->types): ?>
-                            <div class="mt-2">
-                                <?php
-                                $types = json_decode($pokemon->types, true);
-                                if ($types && is_array($types)):
-                                    ?>
-                                    <?php foreach ($types as $type): ?>
+                        
+                            @if($pokemon->types)
+                                <div class="mt-2">
+                                    @foreach($pokemon->types as $type)
                                         <span class="inline-block text-xs px-2 py-1 rounded bg-blue-100 text-blue-800 m-0.5">
-                                            <?php echo e($type['type']['name'] ?? $type); ?>
+                                            {{ $type['type']['name'] ?? $type }}
                                         </span>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <div class="text-center py-8 text-gray-500">
-                <p>😢 Покемоны пока не пойманы</p>
-                <p class="text-sm mt-2">Запустите команду: <code class="bg-gray-100 px-2 py-1 rounded">pokemon:fetch</code></p>
-            </div>
-        <?php endif; ?>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="text-center py-8 text-gray-500">
+                    <p>😢 Покемоны пока не пойманы</p>
+                    <p class="text-sm mt-2">Запустите команду: <code class="bg-gray-100 px-2 py-1 rounded">pokemon:fetch</code></p>
+                </div>
+            @endif
         </div>
-    </div>>
+    </div>
 
     <script>
         let hourlyChart, citiesChart;

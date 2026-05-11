@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\PokemonRepositoryInterface;
+use App\Contracts\PokemonReadServiceInterface;
 
 class PokemonController extends Controller
 {
     public function __construct(
 
-        private PokemonRepositoryInterface $pokemonRepository
+        private PokemonReadServiceInterface $pokemonService
 
     ) {}
 
-    public function index()
+    public function index()//Получение всех покемонов
     {
-        $pokemons = $this->pokemonRepository->getAll();
+        $pokemons = $this->pokemonService->getAll();
 
         return response()->json([
             'success' => true,
@@ -23,9 +23,9 @@ class PokemonController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show($id)//Получение покемона по ID
     {
-        $pokemon = $this->pokemonRepository->findById($id);
+        $pokemon = $this->pokemonService->findById($id);
 
         if (!$pokemon) {
             return response()->json([

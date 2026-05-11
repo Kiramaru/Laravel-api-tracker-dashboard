@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Contracts\PokemonApiInterface;
-use App\Contracts\PokemonRepositoryInterface;
+use App\Contracts\PokemonServiceInterface;
+use App\Exceptions\PokemonAlreadyExistsException;
 use Illuminate\Console\Command;
 
 
@@ -14,8 +14,7 @@ class FetchPokemonData extends Command
 
     public function __construct(
 
-        private PokemonApiInterface $pokemonApi,
-        private PokemonRepositoryInterface $pokemonRepository
+        private PokemonServiceInterface $pokemonService
 
         ) {
 
@@ -25,27 +24,22 @@ class FetchPokemonData extends Command
     public function handle(): int
     {
         try {
-            
-            $pokemonData = $this->pokemonApi->fetchRandom();//Получение данных из API
 
-            
-            if ($this->pokemonRepository->exists($pokemonData['pokemon_id'])) {//Проверква присутствует ли в БД этот покемон
+            $pokemon = $this->pokemonService->fetchAndSaveRandom();//Получение данных из API и сохранение в БД
 
-                $this->info("Pokemon already exists: " . $pokemonData['name']);
-                return 0;
-            }
-
-            
-            $this->pokemonRepository->save($pokemonData);//Запись покемона в БД
-
-            $this->info("New pokemon saved: " . $pokemonData['name']);
+            $this->info("New pokemon saved: " . $pokemon->name);
             return 0;
 
-        }
-        catch (\Exception $e) {
 
-            $this->error("Error " . $e->getMessage());
+        } catch (PokemonAlreadyExistsException $e) {//Если покемон уже существует, выводим сообщение и завершаем команду без ошибки
+            $this->info($e->getMessage());
+            return 0;
+
+        } catch (\Exception $e) {
+
+            $this->error("Error: " . $e->getMessage());//Вывод ошибки, если что-то пошло не так
             return 1;
         }
+
     }
 }

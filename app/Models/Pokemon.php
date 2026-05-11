@@ -15,4 +15,9 @@ class Pokemon extends Model
         'abilities',
         'image_url',
     ];
+
+    protected $casts = [//Указываем, что поле 'types' должно быть преобразовано в массив при сохранении и извлечении из базы данных
+
+        'types' => 'array',
+    ];
 }

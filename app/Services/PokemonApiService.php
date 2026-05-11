@@ -10,7 +10,10 @@ class PokemonApiService implements PokemonApiInterface
     public function __construct(
 
         private string $baseUrl,
-        private int $maxId
+        private int $maxId,
+        private int $timeout = 60,
+        private int $retries = 3,
+        private int $retryDelay = 100
 
     ) {}
 
@@ -18,7 +21,9 @@ class PokemonApiService implements PokemonApiInterface
     {
         $randomId = rand(1, $this->maxId); //Рандомный id от 1 до максимального
 
-        $response = Http::timeout(60)->retry(3, 100)->get($this->baseUrl . $randomId); //Отправка запроса
+        $response = Http::timeout($this->timeout)
+            ->retry($this->retries, $this->retryDelay)
+            ->get($this->baseUrl . $randomId); //Отправка запроса
 
         if (!$response->successful()) { //Если не прошел
 
@@ -33,7 +38,7 @@ class PokemonApiService implements PokemonApiInterface
             'name' => $data['name'],
             'height' => $data['height'],
             'weight' => $data['weight'],
-            'types' => json_encode($data['types']),
+            'types' => $data['types'],
             'image_url' => $data['sprites']['front_default'],
             'abilities' => $this->extractAbilities($data['abilities']),
         ];

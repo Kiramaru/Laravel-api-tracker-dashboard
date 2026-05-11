@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\PokemonRepositoryInterface;
 use App\Contracts\StatsServiceInterface;
+use App\Contracts\PokemonReadServiceInterface;
 
 class StatsController extends Controller
 {
     public function __construct(
 
         private StatsServiceInterface $statsService,
-        private PokemonRepositoryInterface $pokemonRepository
+        private PokemonReadServiceInterface $pokemonService
 
     ) {}
 
-    public function index()
+    public function index()//Отображение страницы со статистикой
     {
 
-        $pokemons = $this->pokemonRepository->getAll();
+        $pokemons = $this->pokemonService->getAll();
 
         return view('stats', compact('pokemons'));
     }
