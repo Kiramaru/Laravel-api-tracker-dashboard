@@ -13,7 +13,7 @@ class VisitController extends Controller
 
     public function track(Request $request)
     {
-        try {
+        /*try {
 
             Log::info('VisitController: request received', $request->all());
             $validated = $request->validate([ //Если поле заполнено, то оно должно быть строкой. Если поле не заполнено, то оно может быть null.
@@ -49,8 +49,42 @@ class VisitController extends Controller
                 'success' => false,
                 'error' => $e->getMessage()
             ], 500);
-        }
+        }*/
+         Log::info('🔵 VisitController.track called', [
+            'ip' => $request->ip(),
+            'headers' => $request->headers->all(),
+            'input' => $request->all()
+        ]);
 
+        try {
+            $validated = $request->validate([
+                'device' => 'nullable|string',
+                'browser' => 'nullable|string',
+                'page_url' => 'nullable|string',
+            ]);
+
+            $ip = $request->ip();
+
+            Log::info('🟢 Validation passed', ['ip' => $ip, 'validated' => $validated]);
+
+            $result = $this->trackingService->trackVisit($validated, $ip);
+
+            Log::info('🟢 Tracking result', $result);
+
+            return response()->json($result, 201);
+        } catch (\Exception $e) {
+            Log::error('🔴 Visit tracking failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
 
     }
 }
