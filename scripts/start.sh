@@ -24,6 +24,15 @@ mkdir -p /var/www/html/storage/framework/sessions
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+echo "=== SESSION DIAGNOSTIC ==="
+ls -la /var/www/html/storage/framework/
+ls -la /var/www/html/storage/framework/sessions/ || echo "Sessions folder missing"
+touch /var/www/html/storage/framework/sessions/test || echo "Cannot write to sessions"
+rm -f /var/www/html/storage/framework/sessions/test
+php artisan session:table || echo "Session table check"
+echo "=== END DIAGNOSTIC ==="
+
+
 # Создаём .env
 echo "APP_NAME=\"Pokemon Stats Tracker\"" > .env
 echo "APP_ENV=${APP_ENV:-production}" >> .env
