@@ -13,28 +13,44 @@ class VisitController extends Controller
 
     public function track(Request $request)
     {
-        Log::info('VisitController: request received', $request->all());
-        $validated = $request->validate([ //Если поле заполнено, то оно должно быть строкой. Если поле не заполнено, то оно может быть null.
+        try {
 
-            'ip' => 'nullable|string',
-            'city' => 'nullable|string',
-            'device' => 'nullable|string',
-            'browser' => 'nullable|string',
-            'page_url' => 'nullable|string',
+            Log::info('VisitController: request received', $request->all());
+            $validated = $request->validate([ //Если поле заполнено, то оно должно быть строкой. Если поле не заполнено, то оно может быть null.
 
-        ]);
+                'ip' => 'nullable|string',
+                'city' => 'nullable|string',
+                'device' => 'nullable|string',
+                'browser' => 'nullable|string',
+                'page_url' => 'nullable|string',
 
-        
+            ]);
 
-        //Получение ip
-        $ip = $request->ip();
 
-        Log::info('VisitController: validated', ['ip' => $ip, 'validated' => $validated]);
 
-        // Передаём всё в сервис
-        $result = $this->trackingService->trackVisit($validated, $ip);
-        Log::info('VisitController: result', $result);
+            //Получение ip
+            $ip = $request->ip();
 
-        return response()->json($result, 201);
+            Log::info('VisitController: validated', ['ip' => $ip, 'validated' => $validated]);
+
+            // Передаём всё в сервис
+            $result = $this->trackingService->trackVisit($validated, $ip);
+            Log::info('VisitController: result', $result);
+
+            return response()->json($result, 201);
+        } catch (\Exception $e) {
+            Log::error('Visit tracking error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+
     }
 }

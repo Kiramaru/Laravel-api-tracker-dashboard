@@ -30,23 +30,19 @@ class VisitTrackingService implements VisitTrackingServiceInterface
                 'page_url' => $validatedData['page_url'] ?? null,
             ]);
 
-            Log::info('Visit saved', ['visit_id' => $visit->id]);
-
             return [
                 'success' => true,
                 'message' => 'Visit tracked',
                 'visit_id' => $visit->id
             ];
         } catch (\Exception $e) {
-            Log::error('Visit tracking failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-                ]);
-
-            return [
-                'success' => false,
-                'message' => 'Failed to track visit: ' . $e->getMessage()
-            ];
+            Log::error('VisitTrackingService error', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'ip' => $ip
+            ]);
+            throw $e;
         }
     }
 }
