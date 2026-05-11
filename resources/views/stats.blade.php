@@ -2,9 +2,10 @@
 <html>
 <head>
     <title>Статистика посещений</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto p-6">
