@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y \
 COPY . /var/www/html
 WORKDIR /var/www/html
 
+# Создаём .env из .env.example
+RUN cp .env.example .env
+
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -28,7 +31,7 @@ RUN mkdir -p /var/www/html/bootstrap/cache \
 # Установка зависимостей
 RUN composer install --no-dev --optimize-autoloader
 
-# Генерация ключа и миграции (ВО ВРЕМЯ СБОРКИ)
+# Генерация ключа и миграции
 RUN php artisan key:generate --force
 RUN php artisan migrate --force
 
