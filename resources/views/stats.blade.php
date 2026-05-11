@@ -99,30 +99,46 @@
         let hourlyChart, citiesChart;
         
         async function loadData() {
+        const token = document.querySelector('meta[name="csrf-token"]').content;
+    
+        try {
             const response = await fetch('/stats/data', {
-                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
             });
+        
+            if (response.status === 419) {
+                console.error('CSRF token mismatch, reloading page...');
+                location.reload();
+                return;
+            }
+        
             const data = await response.json();
-            
+        
             document.getElementById('totalCount').innerText = data.total;
             document.getElementById('uniqueCount').innerText = data.unique_ips;
-            
+        
             // График по часам
             const hours = data.hourly.map(h => h.hour);
             const visits = data.hourly.map(h => h.unique_visits);
-            
+        
             if (hourlyChart) hourlyChart.destroy();
             hourlyChart = new Chart(document.getElementById('hourlyChart'), {
                 type: 'line',
                 data: { labels: hours, datasets: [{ label: 'Уникальные посещения', data: visits, borderColor: 'blue' }] }
             });
-            
+        
             // Круговая диаграмма по городам
             if (citiesChart) citiesChart.destroy();
             citiesChart = new Chart(document.getElementById('citiesChart'), {
                 type: 'pie',
                 data: { labels: data.cities.map(c => c.city), datasets: [{ data: data.cities.map(c => c.count) }] }
             });
+        } catch (error) {
+            console.error('Error loading stats:', error);
         }
         
         loadData();

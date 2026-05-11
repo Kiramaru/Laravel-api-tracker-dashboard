@@ -1,6 +1,5 @@
 (function () {
     
-    console.log('CSRF Token:', document.querySelector('meta[name="csrf-token"]')?.content);
     function getDevice() {// Определяем устройство
 
         const ua = navigator.userAgent.toLowerCase();//Информация о браузере и устройстве в нижнем регистре для удобства проверки
