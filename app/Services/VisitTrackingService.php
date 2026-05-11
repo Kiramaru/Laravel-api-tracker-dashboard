@@ -17,32 +17,18 @@ class VisitTrackingService implements VisitTrackingServiceInterface
     public function trackVisit(array $validatedData, string $ip): array
     {
 
-        try {
-            // Ïîëó÷àåì ãîğîä ïî IP
-            $city = $this->geoLocationService->getCityByIp($ip);
+        $visit = $this->visitRepository->create([
+            'ip' => $ip,
+            'city' => null,
+            'device' => $validatedData['device'] ?? null,
+            'browser' => $validatedData['browser'] ?? null,
+            'page_url' => $validatedData['page_url'] ?? null,
+        ]);
 
-            // Ñîçäà¸ì çàïèñü î ïîñåùåíèè
-            $visit = $this->visitRepository->create([
-                'ip' => $ip,
-                'city' => $city,
-                'device' => $validatedData['device'] ?? null,
-                'browser' => $validatedData['browser'] ?? null,
-                'page_url' => $validatedData['page_url'] ?? null,
-            ]);
-
-            return [
-                'success' => true,
-                'message' => 'Visit tracked',
-                'visit_id' => $visit->id
-            ];
-        } catch (\Exception $e) {
-            Log::error('VisitTrackingService error', [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'ip' => $ip
-            ]);
-            throw $e;
-        }
+        return [
+            'success' => true,
+            'message' => 'Visit tracked',
+            'visit_id' => $visit->id
+        ];
     }
 }
