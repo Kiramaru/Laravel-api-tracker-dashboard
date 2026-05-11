@@ -97,9 +97,21 @@
             },
             body: JSON.stringify(data)
 
-        }).then(response => response.json())
-            .then(result => console.log('Visit tracked:', result))
-            .catch(err => console.log('Tracker error:', err));
+        })
+            .then(response => {
+            console.log('Status:', response.status);
+            return response.text();  // Получаем как текст
+        })
+            .then(text => {
+            console.log('Response:', text);
+            try {
+                const json = JSON.parse(text);
+                console.log('Success:', json);
+            } catch (e) {
+                console.error('Not JSON, probably HTML error page');
+            }
+        })
+        .catch(err => console.log('Network error:', err));
     }
 
     if (document.readyState === 'loading') { // Запускаем отправку после загрузки страницы
