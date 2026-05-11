@@ -13,6 +13,7 @@ class VisitController extends Controller
 
     public function track(Request $request)
     {
+        Log::info('VisitController: request received', $request->all());
         $validated = $request->validate([ //Если поле заполнено, то оно должно быть строкой. Если поле не заполнено, то оно может быть null.
 
             'ip' => 'nullable|string',
@@ -23,11 +24,16 @@ class VisitController extends Controller
 
         ]);
 
+        
+
         //Получение ip
         $ip = $request->ip();
 
+        Log::info('VisitController: validated', ['ip' => $ip, 'validated' => $validated]);
+
         // Передаём всё в сервис
         $result = $this->trackingService->trackVisit($validated, $ip);
+        Log::info('VisitController: result', $result);
 
         return response()->json($result, 201);
     }
