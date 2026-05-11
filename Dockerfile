@@ -13,9 +13,9 @@ RUN apt-get update && apt-get install -y \
 COPY . /var/www/html
 WORKDIR /var/www/html
 
-
-RUN chown -R www-data:www-data /var/www/html/database
-RUN chmod -R 775 /var/www/html/database
+RUN mkdir -p /var/www/html/database \
+    && chown -R www-data:www-data /var/www/html/database \
+    && chmod -R 775 /var/www/html/database
 
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

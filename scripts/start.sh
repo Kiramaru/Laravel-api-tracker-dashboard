@@ -12,6 +12,13 @@ echo "log_errors = On" >> /usr/local/etc/php/conf.d/errors.ini
 
 cd /var/www/html || exit 1
 
+# Права на SQLite (дублируем на случай, если папка пересоздалась)
+mkdir -p /var/www/html/database
+touch /var/www/html/database/database.sqlite
+chown -R www-data:www-data /var/www/html/database
+chmod -R 775 /var/www/html/database
+chmod 664 /var/www/html/database/database.sqlite
+
 # Создаём .env
 echo "APP_NAME=\"Pokemon Stats Tracker\"" > .env
 echo "APP_ENV=${APP_ENV:-production}" >> .env
