@@ -14,19 +14,20 @@ ENV APP_ENV production
 ENV APP_DEBUG false
 ENV LOG_CHANNEL stderr
 
-# ЯВНАЯ УСТАНОВКА ЗАВИСИМОСТЕЙ
-# Это ключевая часть, которая решит проблему
-RUN composer install --no-dev --optimize-autoloader
+# --- ПРАВИЛЬНЫЙ ПОРЯДОК ДЕЙСТВИЙ ---
+# 1. Сначала создаем все необходимые папки и даем права
+# 2. Затем запускаем Composer (теперь у него будут права на запись)
 
-# Создаем папки для кэша и прав
-RUN mkdir -p /var/www/html/storage/framework/cache \
-    /var/www/html/storage/framework/sessions \
-    /var/www/html/storage/framework/views \
-    /var/www/html/storage/logs \
-    /var/www/html/bootstrap/cache \
-    && chown -R www-data:www-data /var/www/html/storage \
-    /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage \
-    /var/www/html/bootstrap/cache
+# Создаем папки для кэша и логов
+RUN mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /var/www/html/storage/framework/cache \
+    && mkdir -p /var/www/html/storage/framework/sessions \
+    && mkdir -p /var/www/html/storage/framework/views \
+    && mkdir -p /var/www/html/storage/logs \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Устанавливаем PHP-зависимости 
+RUN composer install --no-dev --optimize-autoloader
 
 CMD ["/start.sh"]
