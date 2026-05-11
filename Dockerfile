@@ -13,8 +13,21 @@ RUN apt-get update && apt-get install -y \
 COPY . /var/www/html
 WORKDIR /var/www/html
 
-# Создаём .env из .env.example
-RUN cp .env.example .env
+# Создаём .env с переменными окружения Render
+RUN echo "APP_NAME=\"Pokemon Stats Tracker\"" > .env && \
+    echo "APP_ENV=production" >> .env && \
+    echo "APP_DEBUG=false" >> .env && \
+    echo "APP_URL=${APP_URL}" >> .env && \
+    echo "" >> .env && \
+    echo "DB_CONNECTION=pgsql" >> .env && \
+    echo "DB_HOST=${DB_HOST}" >> .env && \
+    echo "DB_PORT=${DB_PORT}" >> .env && \
+    echo "DB_DATABASE=${DB_DATABASE}" >> .env && \
+    echo "DB_USERNAME=${DB_USERNAME}" >> .env && \
+    echo "DB_PASSWORD=${DB_PASSWORD}" >> .env && \
+    echo "" >> .env && \
+    echo "POKEMON_API_URL=${POKEMON_API_URL:-https://pokeapi.co/api/v2/pokemon/}" >> .env && \
+    echo "POKEMON_MAX_ID=1025" >> .env
 
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
