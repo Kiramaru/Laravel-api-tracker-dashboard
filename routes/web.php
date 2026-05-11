@@ -4,6 +4,16 @@ use App\Http\Controllers\StatsController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Artisan;
 
+Route::get('/debug-files', function() {
+    $files = scandir('/var/www/html');
+    return response()->json([
+        'files' => $files,
+        'has_composer_json' => file_exists('/var/www/html/composer.json'),
+        'has_composer_lock' => file_exists('/var/www/html/composer.lock'),
+        'pwd' => getcwd()
+    ]);
+});
+
 Route::get('/', function () {
     return redirect('/stats');
 });
