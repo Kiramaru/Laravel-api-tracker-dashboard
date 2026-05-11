@@ -14,7 +14,4 @@ ENV LOG_CHANNEL stderr
 
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
-# Установка системных зависимостей
-RUN apk add --no-cache postgresql-client
-
 CMD ["/start.sh"]
