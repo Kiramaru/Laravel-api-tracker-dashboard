@@ -40,7 +40,7 @@ echo "APP_DEBUG=${APP_DEBUG:-false}" >> .env
 echo "APP_URL=${APP_URL}" >> .env
 echo "APP_KEY=${APP_KEY}" >> .env
 echo "DATABASE_URL=${DATABASE_URL}" >> .env
-echo "SESSION_DRIVER=file" >> .env
+echo "SESSION_DRIVER=array" >> .env
 echo "POKEMON_API_URL=${POKEMON_API_URL:-https://pokeapi.co/api/v2/pokemon/}" >> .env
 echo "POKEMON_MAX_ID=1025" >> .env
 
