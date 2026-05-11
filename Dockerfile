@@ -1,33 +1,43 @@
-FROM richarvey/nginx-php-fpm:3.1.6
+FROM php:8.2-fpm
 
-# Копируем весь проект в контейнер
-COPY . .
+# Установка Nginx и зависимостей
+RUN apt-get update && apt-get install -y \
+    nginx \
+    libpq-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    && docker-php-ext-install pdo pdo_pgsql pdo_mysql zip
 
-# Устанавливаем переменные окружения
-ENV WEBROOT /var/www/html/public
-ENV PHP_ERRORS_STDERR 1
-ENV RUN_SCRIPTS 1
-ENV REAL_IP_HEADER 1
+# Копируем конфиг Nginx
+RUN echo 'server { \
+    listen 80; \
+    server_name _; \
+    root /var/www/html/public; \
+    index index.php; \
+    location / { \
+        try_files $uri $uri/ /index.php?$query_string; \
+    } \
+    location ~ \.php$ { \
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock; \
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+        include fastcgi_params; \
+    } \
+}' > /etc/nginx/sites-available/default
 
-# Стандартные переменные Laravel
-ENV APP_ENV production
-ENV APP_DEBUG false
-ENV LOG_CHANNEL stderr
+# Копируем проект
+COPY . /var/www/html
+WORKDIR /var/www/html
 
-# --- ПРАВИЛЬНЫЙ ПОРЯДОК ДЕЙСТВИЙ ---
-# 1. Сначала создаем все необходимые папки и даем права
-# 2. Затем запускаем Composer (теперь у него будут права на запись)
+# Установка Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Создаем папки для кэша и логов
-RUN mkdir -p /var/www/html/bootstrap/cache \
-    && mkdir -p /var/www/html/storage/framework/cache \
-    && mkdir -p /var/www/html/storage/framework/sessions \
-    && mkdir -p /var/www/html/storage/framework/views \
-    && mkdir -p /var/www/html/storage/logs \
-    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Устанавливаем PHP-зависимости 
+# Установка зависимостей и настройка
 RUN composer install --no-dev --optimize-autoloader
 
-CMD ["/start.sh"]
+# Права на папки
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Запуск PHP-FPM и Nginx
+CMD php-fpm -D && nginx -g "daemon off;"
