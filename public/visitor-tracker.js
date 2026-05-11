@@ -90,29 +90,23 @@
 
         const token = document.querySelector('meta[name="csrf-token"]')?.content;
 
-        fetch('/api/visit/track', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': token || ''
-            },
-            body: JSON.stringify(data)
+        console.log('📊 Sending visit data:', data);
 
-        })
-            .then(response => {
-            console.log('Status:', response.status);
-            return response.text();  // Получаем как текст
-        })
-            .then(text => {
-            console.log('Response:', text);
-            try {
-                const json = JSON.parse(text);
-                console.log('Success:', json);
-            } catch (e) {
-                console.error('Not JSON, probably HTML error page');
-            }
-        })
-        .catch(err => console.log('Network error:', err));
+        try {
+            const response = await fetch('/api/visit/track', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token || ''
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            console.log('✅ Visit tracked:', result);
+        } catch (error) {
+            console.error('❌ Tracker error:', error);
+        }
     }
 
     if (document.readyState === 'loading') { // Запускаем отправку после загрузки страницы
