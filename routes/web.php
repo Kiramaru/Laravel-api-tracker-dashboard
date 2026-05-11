@@ -9,6 +9,10 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
+Route::get('/test-php', function () {
+    return response()->json(['status' => 'PHP works']);
+});
+
 Route::get('/clear-cache', function() {
     Artisan::call('optimize:clear');
     return 'Cache cleared: ' . Artisan::output();
