@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 
 echo "=========================================="
@@ -6,7 +7,7 @@ echo "=========================================="
 
 cd /var/www/html || exit 1
 
-# Создаём .env из переменных окружения
+# Создаём .env
 echo "APP_NAME=\"Pokemon Stats Tracker\"" > .env
 echo "APP_ENV=${APP_ENV:-production}" >> .env
 echo "APP_DEBUG=${APP_DEBUG:-false}" >> .env
@@ -16,29 +17,31 @@ echo "DATABASE_URL=${DATABASE_URL}" >> .env
 echo "POKEMON_API_URL=${POKEMON_API_URL:-https://pokeapi.co/api/v2/pokemon/}" >> .env
 echo "POKEMON_MAX_ID=1025" >> .env
 
-echo ".env file created. Contents:"
-cat .env
+echo ".env file created."
 
-# Принудительно генерируем ключ, если он не установлен или пуст
+# Генерация ключа (если не установлен)
 if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "null" ]; then
     echo "APP_KEY is empty, generating..."
     php artisan key:generate --force
-else
-    echo "APP_KEY is already set, skipping generation."
 fi
 
-# Запускаем миграции
+# Запускаем все миграции (включая sessions)
 echo "Running migrations..."
 php artisan migrate --force
 
-# Запускаем PHP-FPM в фоне
+# Принудительно создаём таблицу sessions, если вдруг её нет
+php artisan session:table
+php artisan migrate --force
+
+# Очищаем кэш конфигурации (важно!)
+php artisan config:clear
+php artisan cache:clear
+
+# Запуск PHP-FPM и Nginx
 echo "Starting PHP-FPM..."
 php-fpm -D
 
-# Запускаем Nginx в foreground (он не должен завершаться)
 echo "Starting Nginx..."
 nginx -g "daemon off;"
 
-# Если Nginx по какой-то причине завершился, пишем в лог и останавливаем контейнер
-echo "ERROR: Nginx exited unexpectedly."
 exit 1
