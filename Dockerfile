@@ -16,7 +16,7 @@ WORKDIR /var/www/html
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# --- ВАЖНО: СНАЧАЛА СОЗДАЁМ ПАПКИ И ДАЁМ ПРАВА ---
+# Создаём папки и права
 RUN mkdir -p /var/www/html/bootstrap/cache \
     && mkdir -p /var/www/html/storage/framework/cache \
     && mkdir -p /var/www/html/storage/framework/sessions \
@@ -25,10 +25,10 @@ RUN mkdir -p /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# --- ТЕПЕРЬ УСТАНАВЛИВАЕМ ЗАВИСИМОСТИ (ПРАВА УЖЕ ЕСТЬ) ---
+# Установка зависимостей
 RUN composer install --no-dev --optimize-autoloader
 
-# Конфиг Nginx
+# Создаём конфиг Nginx
 RUN echo 'server { \
     listen 80; \
     server_name _; \
@@ -38,11 +38,15 @@ RUN echo 'server { \
         try_files $uri $uri/ /index.php?$query_string; \
     } \
     location ~ \.php$ { \
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock; \
+        fastcgi_pass 127.0.0.1:9000; \
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
         include fastcgi_params; \
     } \
 }' > /etc/nginx/sites-available/default
 
-# Запуск
+# Удаляем стандартную дефолтную конфигурацию
+RUN rm -f /etc/nginx/sites-enabled/default \
+    && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Запуск PHP-FPM (на порту 9000) и Nginx
 CMD php-fpm -D && nginx -g "daemon off;"
