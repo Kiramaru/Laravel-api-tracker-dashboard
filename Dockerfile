@@ -28,6 +28,10 @@ RUN mkdir -p /var/www/html/bootstrap/cache \
 # Установка зависимостей
 RUN composer install --no-dev --optimize-autoloader
 
+# Генерация ключа и миграции (ВО ВРЕМЯ СБОРКИ)
+RUN php artisan key:generate --force
+RUN php artisan migrate --force
+
 # Создаём конфиг Nginx
 RUN echo 'server { \
     listen 80; \
