@@ -44,6 +44,10 @@
     }
 
     
+    /*
+
+    Пришлось перенести на сервер из за того, что браузеры запрещают JavaScript-запросам с одного сайта получать данные с другого сайта
+
     async function getGeoData() {// Получаем IP и город через бесплатный API
 
         try {
@@ -62,7 +66,7 @@
             console.log('Geo IP error:', error);
             return { ip: null, city: null };
         }
-    }
+    }*/
 
     let hasSent = false;
 
@@ -72,24 +76,30 @@
 
         hasSent = true;
 
-        const geo = await getGeoData();// Получаем геоданные
+        //const geo = await getGeoData();// Получаем геоданные
 
         const data = {
-            ip: geo.ip,
-            city: geo.city,
+           
+            //ip: geo.ip,
+            //city: geo.city,
             device: getDevice(),
             browser: getBrowser(),
             page_url: window.location.href
         };
 
+        const token = document.querySelector('meta[name="csrf-token"]')?.content;
+
         fetch('/api/visit/track', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': token || ''
             },
             body: JSON.stringify(data)
 
-        }).catch(err => console.log('Tracker error:', err));
+        }).then(response => response.json())
+            .then(result => console.log('Visit tracked:', result))
+            .catch(err => console.log('Tracker error:', err));
     }
 
     if (document.readyState === 'loading') { // Запускаем отправку после загрузки страницы

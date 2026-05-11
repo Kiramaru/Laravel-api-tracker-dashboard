@@ -17,7 +17,10 @@ use App\Services\PokemonReadService;
 use App\Services\PokemonWriteService;
 use App\Services\StatsService;
 use App\Services\VisitRepository;
-
+use App\Services\GeoLocationService;
+use App\Services\VisitTrackingService;
+use App\Contracts\GeoLocationServiceInterface;
+use App\Contracts\VisitTrackingServiceInterface;
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
@@ -35,6 +38,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PokemonReadServiceInterface::class, PokemonReadService::class);
 
         $this->app->bind(PokemonServiceInterface::class, PokemonWriteService::class);
+
+        $this->app->bind(GeoLocationServiceInterface::class, GeoLocationService::class);
+
+        $this->app->bind(VisitTrackingServiceInterface::class, VisitTrackingService::class);
 
 
         $this->app->when(PokemonApiService::class)

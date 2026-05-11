@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Contracts\VisitRepositoryInterface;
+use App\Contracts\VisitTrackingServiceInterface;
 use Illuminate\Http\Request;
 
 class VisitController extends Controller
 {
     public function __construct(
-        private VisitRepositoryInterface $visitRepository
+        private VisitTrackingServiceInterface $trackingService
     ) {}
 
     public function track(Request $request)
@@ -23,8 +23,12 @@ class VisitController extends Controller
 
         ]);
 
-        $visit = $this->visitRepository->create($validated);//Создание объекта Visit с данными из запроса
+        //Получение ip
+        $ip = $request->ip();
 
-        return response()->json(['success' => true, 'message' => 'Visit tracked'], 201);//Ответ в формате JSON с сообщением об успешном отслеживании визита и статусом
+        // Передаём всё в сервис
+        $result = $this->trackingService->trackVisit($validated, $ip);
+
+        return response()->json($result, 201);
     }
 }
