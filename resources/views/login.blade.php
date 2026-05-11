@@ -4,6 +4,7 @@
     <title>Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/visitor-tracker.js"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
     <div class="bg-white p-8 rounded shadow w-96">
