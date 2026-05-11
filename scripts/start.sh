@@ -1,33 +1,44 @@
-cat > scripts/start.sh << 'EOF'
 #!/usr/bin/env bash
 
 echo "=========================================="
 echo "Starting Laravel Application"
 echo "=========================================="
 
-# Создаём .env из переменных окружения
-echo "APP_NAME=\"Pokemon Stats Tracker\"" > /var/www/html/.env
-echo "APP_ENV=${APP_ENV:-production}" >> /var/www/html/.env
-echo "APP_DEBUG=${APP_DEBUG:-false}" >> /var/www/html/.env
-echo "APP_URL=${APP_URL}" >> /var/www/html/.env
-echo "APP_KEY=${APP_KEY}" >> /var/www/html/.env
-echo "" >> /var/www/html/.env
-echo "DATABASE_URL=${DATABASE_URL}" >> /var/www/html/.env
-echo "" >> /var/www/html/.env
-echo "POKEMON_API_URL=${POKEMON_API_URL:-https://pokeapi.co/api/v2/pokemon/}" >> /var/www/html/.env
-echo "POKEMON_MAX_ID=1025" >> /var/www/html/.env
+cd /var/www/html || exit 1
 
-# Генерация ключа (только если APP_KEY не установлен)
-if [ -z "${APP_KEY}" ]; then
+# Создаём .env из переменных окружения
+echo "APP_NAME=\"Pokemon Stats Tracker\"" > .env
+echo "APP_ENV=${APP_ENV:-production}" >> .env
+echo "APP_DEBUG=${APP_DEBUG:-false}" >> .env
+echo "APP_URL=${APP_URL}" >> .env
+echo "APP_KEY=${APP_KEY}" >> .env
+echo "DATABASE_URL=${DATABASE_URL}" >> .env
+echo "POKEMON_API_URL=${POKEMON_API_URL:-https://pokeapi.co/api/v2/pokemon/}" >> .env
+echo "POKEMON_MAX_ID=1025" >> .env
+
+echo ".env file created. Contents:"
+cat .env
+
+# Принудительно генерируем ключ, если он не установлен или пуст
+if [ -z "${APP_KEY}" ] || [ "${APP_KEY}" = "null" ]; then
+    echo "APP_KEY is empty, generating..."
     php artisan key:generate --force
+else
+    echo "APP_KEY is already set, skipping generation."
 fi
 
-# Миграции
+# Запускаем миграции
+echo "Running migrations..."
 php artisan migrate --force
 
-# Запуск PHP-FPM и Nginx
+# Запускаем PHP-FPM в фоне
+echo "Starting PHP-FPM..."
 php-fpm -D
-nginx -g "daemon off;"
-EOF
 
-chmod +x scripts/start.sh
+# Запускаем Nginx в foreground (он не должен завершаться)
+echo "Starting Nginx..."
+nginx -g "daemon off;"
+
+# Если Nginx по какой-то причине завершился, пишем в лог и останавливаем контейнер
+echo "ERROR: Nginx exited unexpectedly."
+exit 1

@@ -28,9 +28,11 @@ RUN mkdir -p /var/www/html/bootstrap/cache \
 # Установка зависимостей
 RUN composer install --no-dev --optimize-autoloader
 
-# Копируем скрипт запуска
+# Копируем скрипт запуска и убеждаемся, что он исполняемый
 COPY scripts/start.sh /start.sh
-RUN chmod +x /start.sh
+RUN chmod +x /start.sh && \
+    cat /start.sh && \
+    echo "=== start.sh contents displayed ==="
 
 # Создаём конфиг Nginx
 RUN echo 'server { \
