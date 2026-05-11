@@ -13,22 +13,6 @@ RUN apt-get update && apt-get install -y \
 COPY . /var/www/html
 WORKDIR /var/www/html
 
-# Создаём .env с переменными окружения Render
-RUN echo "APP_NAME=\"Pokemon Stats Tracker\"" > .env && \
-    echo "APP_ENV=production" >> .env && \
-    echo "APP_DEBUG=false" >> .env && \
-    echo "APP_URL=${APP_URL}" >> .env && \
-    echo "" >> .env && \
-    echo "DB_CONNECTION=pgsql" >> .env && \
-    echo "DB_HOST=${DB_HOST}" >> .env && \
-    echo "DB_PORT=${DB_PORT}" >> .env && \
-    echo "DB_DATABASE=${DB_DATABASE}" >> .env && \
-    echo "DB_USERNAME=${DB_USERNAME}" >> .env && \
-    echo "DB_PASSWORD=${DB_PASSWORD}" >> .env && \
-    echo "" >> .env && \
-    echo "POKEMON_API_URL=${POKEMON_API_URL:-https://pokeapi.co/api/v2/pokemon/}" >> .env && \
-    echo "POKEMON_MAX_ID=1025" >> .env
-
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -44,9 +28,9 @@ RUN mkdir -p /var/www/html/bootstrap/cache \
 # Установка зависимостей
 RUN composer install --no-dev --optimize-autoloader
 
-# Генерация ключа и миграции
-RUN php artisan key:generate --force
-RUN php artisan migrate --force
+# Копируем скрипт запуска
+COPY scripts/start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Создаём конфиг Nginx
 RUN echo 'server { \
@@ -64,9 +48,7 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/sites-available/default
 
-# Удаляем стандартную дефолтную конфигурацию
 RUN rm -f /etc/nginx/sites-enabled/default \
     && ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 
-# Запуск PHP-FPM (на порту 9000) и Nginx
-CMD php-fpm -D && nginx -g "daemon off;"
+CMD ["/start.sh"]
