@@ -3,25 +3,30 @@ FROM richarvey/nginx-php-fpm:3.1.6
 # Копируем весь проект в контейнер
 COPY . .
 
-# --- КЛЮЧЕВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ОБРАЗА ---
-# Устанавливаем зависимости Composer во время сборки
-ENV SKIP_COMPOSER 0
-# Указываем папку, где лежит index.php
+# Устанавливаем переменные окружения
 ENV WEBROOT /var/www/html/public
-# Включаем вывод ошибок PHP
 ENV PHP_ERRORS_STDERR 1
-# Разрешаем выполнение скриптов при старте
 ENV RUN_SCRIPTS 1
-# Включаем заголовок для реального IP
 ENV REAL_IP_HEADER 1
 
-# Стандартные переменные Laravel (можно переопределить в Render)
+# Стандартные переменные Laravel
 ENV APP_ENV production
 ENV APP_DEBUG false
 ENV LOG_CHANNEL stderr
 
-# Разрешаем Composer работать от суперпользователя
-ENV COMPOSER_ALLOW_SUPERUSER 1
+# ЯВНАЯ УСТАНОВКА ЗАВИСИМОСТЕЙ
+# Это ключевая часть, которая решит проблему
+RUN composer install --no-dev --optimize-autoloader
 
-# Образ сам выполнит composer install и запустит сервер
+# Создаем папки для кэша и прав
+RUN mkdir -p /var/www/html/storage/framework/cache \
+    /var/www/html/storage/framework/sessions \
+    /var/www/html/storage/framework/views \
+    /var/www/html/storage/logs \
+    /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html/storage \
+    /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage \
+    /var/www/html/bootstrap/cache
+
 CMD ["/start.sh"]

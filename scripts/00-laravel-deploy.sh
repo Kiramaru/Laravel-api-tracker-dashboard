@@ -1,20 +1,12 @@
 #!/usr/bin/env bash
 echo "=========================================="
-echo "Laravel Deployment Final Fix"
+echo "Running migrations and final setup"
 echo "=========================================="
 
-
-mkdir -p /var/www/html/bootstrap/cache
-mkdir -p /var/www/html/storage/framework/{cache,sessions,views}
-mkdir -p /var/www/html/storage/logs
-
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-
+# Генерируем ключ приложения (если он не установлен в переменных окружения)
 php artisan key:generate --force
 
-
+# Запускаем миграции
 php artisan migrate --force
 
-echo "Deployment and setup complete!"
+echo "Application is ready!"
