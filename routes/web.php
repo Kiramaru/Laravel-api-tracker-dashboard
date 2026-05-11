@@ -4,6 +4,10 @@ use App\Http\Controllers\StatsController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Artisan;
 
+Route::get('/', function () {
+    return redirect('/stats');
+});
+
 Route::get('/clear-cache', function() {
     Artisan::call('optimize:clear');
     return 'Cache cleared: ' . Artisan::output();
