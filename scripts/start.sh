@@ -5,6 +5,11 @@ echo "=========================================="
 echo "Starting Laravel Application"
 echo "=========================================="
 
+# Включаем отображение ошибок
+echo "display_errors = On" >> /usr/local/etc/php/conf.d/errors.ini
+echo "error_reporting = E_ALL" >> /usr/local/etc/php/conf.d/errors.ini
+echo "log_errors = On" >> /usr/local/etc/php/conf.d/errors.ini
+
 cd /var/www/html || exit 1
 
 # Создаём .env
