@@ -34,6 +34,7 @@ class VisitController extends Controller
             Log::info('4. Result: ', $result);
 
             return response()->json($result, 201);
+
         } catch (\Exception $e) {
             Log::error('ERROR: ' . $e->getMessage(), [
                 'file' => $e->getFile(),

@@ -17,9 +17,11 @@ class VisitTrackingService implements VisitTrackingServiceInterface
     public function trackVisit(array $validatedData, string $ip): array
     {
 
+        $city = $this->geoLocationService->getCityByIp($ip);
+
         $visit = $this->visitRepository->create([
             'ip' => $ip,
-            'city' => null,
+            'city' => $city,
             'device' => $validatedData['device'] ?? null,
             'browser' => $validatedData['browser'] ?? null,
             'page_url' => $validatedData['page_url'] ?? null,
