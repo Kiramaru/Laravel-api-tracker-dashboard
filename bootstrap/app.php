@@ -1,11 +1,11 @@
 <?php
 
 use App\Console\Kernel as ConsoleKernel;
-use App\Http\Middleware\Authentication;
 use Illuminate\Contracts\Console\Kernel as KernelContract;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\TrustProxies;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,7 +15,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-
+        
+        $middleware->prepend(TrustProxies::class);
 
     })
     ->withExceptions(function (Exceptions $exceptions) {

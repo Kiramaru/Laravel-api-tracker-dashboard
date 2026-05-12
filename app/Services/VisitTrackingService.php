@@ -17,10 +17,19 @@ class VisitTrackingService implements VisitTrackingServiceInterface
     public function trackVisit(array $validatedData, string $ip): array
     {
 
-        $city = $this->geoLocationService->getCityByIp($ip);
+        $realIp = $this->getRealIp();
+
+        // Логируем для отладки
+        \Log::info('Real IP detected', [
+            'provided_ip' => $ip,
+            'real_ip' => $realIp,
+            'all_headers' => request()->headers->all()
+        ]);
+
+        $city = $this->geoLocationService->getCityByIp($realIp);
 
         $visit = $this->visitRepository->create([
-            'ip' => $ip,
+            'ip' => $realIp,
             'city' => $city,
             'device' => $validatedData['device'] ?? null,
             'browser' => $validatedData['browser'] ?? null,
@@ -30,7 +39,39 @@ class VisitTrackingService implements VisitTrackingServiceInterface
         return [
             'success' => true,
             'message' => 'Visit tracked',
-            'visit_id' => $visit->id
+            'visit_id' => $visit->id,
+            'client_ip' => $realIp
         ];
+
+
+    }
+    private function getRealIp(): string
+    {
+        // Проверяем заголовки с реальным IP
+        $headers = [
+            'CF-Connecting-IP',     // Cloudflare
+            'X-Forwarded-For',       // Стандартный прокси
+            'X-Real-IP',             // Nginx
+            'X-Forwarded',           // Альтернативный
+            'Forwarded-For',         // Альтернативный
+            'Forwarded'              // Альтернативный
+        ];
+
+        foreach ($headers as $header) {
+            if ($value = request()->header($header)) {
+                // X-Forwarded-For может содержать несколько IP
+                if (str_contains($value, ',')) {
+                    $ips = explode(',', $value);
+                    $value = trim($ips[0]);
+                }
+
+                if (filter_var($value, FILTER_VALIDATE_IP)) {
+                    return $value;
+                }
+            }
+        }
+
+        // Если нет заголовков - берем стандартный IP
+        return request()->ip();
     }
 }
