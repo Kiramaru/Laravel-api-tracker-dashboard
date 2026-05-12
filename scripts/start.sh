@@ -63,9 +63,13 @@ else
     echo "Users already exist. Skipping user creation."
 fi
 
-# Очистка кэша (полезна при изменениях)
+# Создание таблицы сессий
+php artisan session:table
+php artisan migrate --force
+
+# Очистка кэша конфигов
 php artisan config:clear
-php artisan cache:clear
+php artisan config:cache
 
 # Запуск серверов
 echo "Starting PHP-FPM..."
