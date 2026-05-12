@@ -141,7 +141,7 @@
             console.error('Error loading stats:', error);
         }
         
-        loadData();
+        document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
