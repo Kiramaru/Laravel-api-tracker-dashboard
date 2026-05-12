@@ -45,6 +45,16 @@ Route::get('/force-login', function () {
     return 'User not found. Please check database.';
 });
 
+Route::get('/debug-stats', function () {
+    $statsService = app(\App\Contracts\StatsServiceInterface::class);
+    return response()->json([
+        'hourly' => $statsService->getHourlyStats(),
+        'cities' => $statsService->getCityStats(),
+        'total' => $statsService->getTotalVisits(),
+        'unique_ips' => $statsService->getUniqueIPsCount()
+    ]);
+});
+
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 Route::post('/logout', [AuthController::class, 'logout'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
