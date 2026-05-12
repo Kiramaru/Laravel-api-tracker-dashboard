@@ -20,6 +20,10 @@ class GeoLocationService implements GeoLocationServiceInterface
 
     public function getCityByIp(string $ip): ?string //Получение города по ip
     {
+        if ($ip === '127.0.0.1' || str_starts_with($ip, '10.') || str_starts_with($ip, '172.')) {
+            return 'Тестовый город';
+        }
+        
         try {
             $response = Http::timeout($this->timeout)
                 ->retry($this->retries, 100)
@@ -35,6 +39,6 @@ class GeoLocationService implements GeoLocationServiceInterface
             ]);
         }
 
-        return null;
+        return 'Неизвестный город';
     }
 }

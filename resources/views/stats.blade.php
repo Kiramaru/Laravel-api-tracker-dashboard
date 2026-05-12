@@ -130,7 +130,15 @@
                 type: 'line',
                 data: { labels: hours, datasets: [{ label: 'Уникальные посещения', data: visits, borderColor: 'blue' }] }
             });
-        
+
+            let citiesData = data.cities || [];
+
+            // Если городов нет, показываем демо-данные
+            if (citiesData.length === 0) {
+                citiesData = [
+                    { city: 'Нет данных (добавьте тестовые)', count: 1 }
+                ];
+}
             // Круговая диаграмма по городам
             if (citiesChart) citiesChart.destroy();
             citiesChart = new Chart(document.getElementById('citiesChart'), {
