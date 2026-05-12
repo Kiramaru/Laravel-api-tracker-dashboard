@@ -77,6 +77,19 @@ chmod -R 777 /var/www/html/storage/framework/sessions
 
 php artisan tinker --execute="echo 'Session test';"
 
+# Запуск команды для добавления покемонов (несколько раз)
+echo "=== Adding initial pokemons ==="
+
+# Запускаем 5 раз с паузой чтобы не перегружать API
+for i in 1 2 3 4 5
+do
+    echo "Fetching pokemon #$i..."
+    php artisan pokemon:fetch
+    sleep 2  # Пауза 2 секунды между запросами
+done
+
+echo "=== Initial pokemons added ==="
+
 # Запуск серверов
 echo "Starting PHP-FPM..."
 php-fpm -D
