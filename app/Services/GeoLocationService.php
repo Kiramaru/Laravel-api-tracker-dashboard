@@ -22,24 +22,32 @@ class GeoLocationService implements GeoLocationServiceInterface
     {
 
         try {
-            $response = Http::timeout($this->timeout)//Запрос на получение города
+            $response = Http::timeout($this->timeout)
                 ->retry($this->retries, 100)
                 ->get($this->apiUrl . $ip);
 
-            if ($response->successful() && $response->json('status') === 'success') {//Если успешно
-                $city = $response->json('city');
-                if ($city && $city !== '') {
-                    $city = mb_convert_encoding($city, 'UTF-8', 'auto');//Кодировка
-                    return $city;
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (isset($data['status']) && $data['status'] === 'success') {
+                    $city = $data['city'] ?? null;
+                    if ($city) {
+                        // Принудительная очистка строки
+                        $city = mb_convert_encoding($city, 'UTF-8', 'auto');
+                        $city = preg_replace('/[^\p{L}\s\-\.]/u', '', $city);
+                        $city = trim($city);
+
+                        if (strlen($city) > 0) {
+                            return $city;
+                        }
+                    }
                 }
             }
         } catch (\Exception $e) {
-            \Log::warning('GeoLocationService error: ' . $e->getMessage(), [
-                'ip' => $ip,
-                'api_url' => $this->apiUrl
-            ]);
+            Log::warning('GeoLocation error: ' . $e->getMessage());
         }
 
-        return 'Неизвестный город';
+        return 'Unknown';
+    
     }
 }

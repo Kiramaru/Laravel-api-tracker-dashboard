@@ -46,14 +46,21 @@ Route::get('/force-login', function () {
 });
 
 Route::get('/test-geo/{ip?}', function ($ip = null) {
-    $ip = $ip ?? request()->ip();
-    $geoService = app(\App\Contracts\GeoLocationServiceInterface::class);
-    $city = $geoService->getCityByIp($ip);
+    try {
+        $ip = $ip ?? request()->ip();
+        $geoService = app(\App\Contracts\GeoLocationServiceInterface::class);
+        $city = $geoService->getCityByIp($ip);
 
-    return response()->json([
-        'ip' => $ip,
-        'city' => $city,
-    ]);
+        return response()->json([
+            'ip' => $ip,
+            'city' => $city ?: 'Not found'
+        ])->header('Content-Type', 'application/json; charset=utf-8');
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage()
+        ], 500)->header('Content-Type', 'application/json; charset=utf-8');
+    }
 });
 
 Route::get('/debug-stats', function () {
