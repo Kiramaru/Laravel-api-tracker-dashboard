@@ -89,7 +89,7 @@
 
         const token = document.querySelector('meta[name="csrf-token"]')?.content;
 
-        console.log('📊 Sending visit data:', data);
+        console.log('Sending visit data:', data);
 
         try {
             const response = await fetch('/api/visit/track', {
@@ -102,9 +102,9 @@
             });
 
             const result = await response.json();
-            console.log('✅ Visit tracked:', result);
+            console.log('Visit tracked:', result);
         } catch (error) {
-            console.error('❌ Tracker error:', error);
+            console.error('Tracker error:', error);
         }
     }
 

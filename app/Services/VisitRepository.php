@@ -20,12 +20,10 @@ class VisitRepository implements VisitRepositoryInterface
             ->orderBy('hour', 'desc')
             ->limit($hours)
             ->get()
-            ->map(function ($item) {
-                return (object) [
-                    'hour' => $item->hour,
-                    'unique_visits' => $item->unique_visits
-                ];
-            });
+            ->map(fn($item) => (object) [
+                'hour' => $item->hour,
+                'unique_visits' => (int) $item->unique_visits
+            ]);
     }
 
 
@@ -34,34 +32,23 @@ class VisitRepository implements VisitRepositoryInterface
         $stats = Visit::select('city', DB::raw('COUNT(*) as count'))
             ->whereNotNull('city')
             ->where('city', '!=', '')
+            ->where('city', '!=', 'Unknown')
             ->where('city', '!=', 'Неизвестный город')
             ->groupBy('city')
             ->orderBy('count', 'desc')
             ->limit($limit)
             ->get();
 
-        $stats = $stats->map(function ($item) {
-            // Очищаем название города от возможных проблемных символов
-            $city = $item->city;
-            $city = preg_replace('/[^\p{L}\s\-]/u', '', $city);
-            $city = mb_convert_encoding($city, 'UTF-8', 'UTF-8');
+        return $stats->map(fn($item) => (object) [
+            'city' => $this->sanitizeCityName($item->city),
+            'count' => (int) $item->count
+        ]);
+    }
 
-            return (object) [
-                'city' => $city ?: 'Город',
-                'count' => $item->count
-            ];
-        });
-
-        // Если реальных данных нет, показываем демо-данные
-        if ($stats->isEmpty()) {
-            return collect([
-                (object) ['city' => 'Москва', 'count' => 5],
-                (object) ['city' => 'Санкт-Петербург', 'count' => 3],
-                (object) ['city' => 'Новосибирск', 'count' => 2],
-            ]);
-        }
-
-        return $stats;
+    private function sanitizeCityName(string $city): string //Изменить кодировку у города и почистить от лишних символов
+    {
+        $city = preg_replace('/[^\p{L}\s\-]/u', '', $city);
+        return mb_convert_encoding($city, 'UTF-8', 'UTF-8') ?: 'Город';
     }
 
     public function getTotalVisits(): int //Получить общее количество посещений

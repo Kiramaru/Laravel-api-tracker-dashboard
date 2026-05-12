@@ -4,93 +4,62 @@ namespace App\Http\Controllers;
 
 use App\Contracts\StatsServiceInterface;
 use App\Contracts\PokemonReadServiceInterface;
+use Illuminate\Http\JsonResponse;
 
 class StatsController extends Controller
 {
     public function __construct(
-
         private StatsServiceInterface $statsService,
         private PokemonReadServiceInterface $pokemonService
-
     ) {}
 
-    public function index()//Отображение страницы со статистикой
+    public function index()
     {
-
-        $pokemons = $this->pokemonService->getAll();
-
+        $pokemons = $this->pokemonService->getAll();//Получение всех покемонов
         return view('stats', compact('pokemons'));
     }
 
-    public function getData()//Получение данных для графиков
+    public function getData(): JsonResponse
     {
         try {
-            // Получаем данные и гарантируем, что они в правильном формате
-            $hourlyStats = $this->statsService->getHourlyStats();
-            $cityStats = $this->statsService->getCityStats();
+            $hourlyStats = $this->statsService->getHourlyStats();//Получение посещений
+            $cityStats = $this->statsService->getCityStats();//Получение городов для статистики
 
-            // Преобразуем в массив с гарантией правильной кодировки
-            $hourly = [];
-            foreach ($hourlyStats as $item) {
-                $hourly[] = [
+            return response()->json([
+                'success' => true,
+                'hourly' => $hourlyStats->map(fn($item) => [
                     'hour' => (string) $item->hour,
                     'unique_visits' => (int) $item->unique_visits
-                ];
-            }
-
-            $cities = [];
-            foreach ($cityStats as $item) {
-                $cityName = $item->city ?? 'Unknown';
-                // Очищаем от потенциально проблемных символов
-                $cityName = mb_convert_encoding($cityName, 'UTF-8', 'UTF-8');
-                $cities[] = [
-                    'city' => $cityName,
+                ])->values(),
+                'cities' => $cityStats->map(fn($item) => [
+                    'city' => $this->sanitizeCityName($item->city),
                     'count' => (int) $item->count
-                ];
-            }
-
-            // Если данных нет, добавляем заглушку для отображения
-            if (empty($hourly)) {
-                $hourly[] = [
-                    'hour' => now()->format('Y-m-d H:00'),
-                    'unique_visits' => 0
-                ];
-            }
-
-            if (empty($cities)) {
-                $cities[] = [
-                    'city' => 'Нет данных',
-                    'count' => 1
-                ];
-            }
-
-            $responseData = [
-                'success' => true,
-                'hourly' => $hourly,
-                'cities' => $cities,
+                ])->values(),
                 'total' => (int) $this->statsService->getTotalVisits(),
                 'unique_ips' => (int) $this->statsService->getUniqueIPsCount()
-            ];
-
-            return response()->json($responseData)
-                ->header('Content-Type', 'application/json; charset=utf-8');
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('Stats error: ' . $e->getMessage());
 
-            // Возвращаем пустые данные в правильном формате
             return response()->json([
                 'success' => false,
-                'hourly' => [
-                    ['hour' => now()->format('Y-m-d H:00'), 'unique_visits' => 0]
-                ],
-                'cities' => [
-                    ['city' => 'Ошибка загрузки', 'count' => 1]
-                ],
+                'hourly' => [],
+                'cities' => [],
                 'total' => 0,
                 'unique_ips' => 0,
-                'error' => $e->getMessage()
-            ])->header('Content-Type', 'application/json; charset=utf-8');
+                'error' => 'Unable to load statistics'
+            ], 500);
         }
+    }
+
+    private function sanitizeCityName(?string $city): string //Обработка значения города
+    {
+        if (!$city || $city === 'Unknown') {//Если пусто или не известный
+            return 'Неизвестный город';
+        }
+
+        $city = mb_convert_encoding($city, 'UTF-8', 'UTF-8');
+        return preg_replace('/[^\p{L}\s\-\.]/u', '', $city) ?: 'Город';
     }
 }

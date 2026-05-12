@@ -7,22 +7,15 @@ use Illuminate\Http\Request;
 
 class TrustProxies extends Middleware
 {
-    /**
-     * Доверенные прокси-серверы
-     *
-     * @var array|string|null
-     */
-    protected $proxies = '*'; // Доверяем всем прокси (для Render)
+    protected $proxies = [
 
-    /**
-     * Заголовки для определения реального IP
-     *
-     * @var int
-     */
-    protected $headers =
-        Request::HEADER_X_FORWARDED_FOR |
-        Request::HEADER_X_FORWARDED_HOST |
-        Request::HEADER_X_FORWARDED_PORT |
-        Request::HEADER_X_FORWARDED_PROTO |
-        Request::HEADER_X_FORWARDED_AWS_ELB;
+        '10.0.0.0/8',
+        '172.16.0.0/12',
+        '192.168.0.0/16',
+    ];
+
+    protected $headers = Request::HEADER_X_FORWARDED_FOR | 
+        Request::HEADER_X_FORWARDED_HOST | 
+        Request::HEADER_X_FORWARDED_PORT | 
+        Request::HEADER_X_FORWARDED_PROTO;
 }
