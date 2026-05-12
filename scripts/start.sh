@@ -71,6 +71,8 @@ php artisan migrate --force
 php artisan config:clear
 php artisan config:cache
 
+php artisan tinker --execute="echo 'Session test';"
+
 # Запуск серверов
 echo "Starting PHP-FPM..."
 php-fpm -D

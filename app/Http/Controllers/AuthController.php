@@ -19,10 +19,13 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        \Log::info('Login attempt', ['email' => $credentials['email']]);
+
         if (Auth::attempt($credentials)) {//Проверка данных и авторизация
+            \Log::info('Login successful', ['user_id' => Auth::id()]);
             return redirect()->intended('/stats');//Перевод пользователя туда, куда он хотел попасть до авторизации, если страницы нет, то на /stats
         }
-
+        \Log::warning('Login failed', ['email' => $credentials['email']]);
         return back()->withErrors(['email' => 'Invalid credentials']);//Если данные не верные, то возвращаемся назад с ошибкой
     }
 
