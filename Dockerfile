@@ -44,13 +44,26 @@ RUN echo 'server { \
     server_name _; \
     root /var/www/html/public; \
     index index.php; \
+    \
+    add_header X-Frame-Options "SAMEORIGIN" always; \
+    add_header X-Content-Type-Options "nosniff" always; \
+    add_header X-XSS-Protection "1; mode=block" always; \
+    \
     location / { \
         try_files $uri $uri/ /index.php?$query_string; \
     } \
+    \
     location ~ \.php$ { \
         fastcgi_pass 127.0.0.1:9000; \
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+        fastcgi_param PHP_VALUE "session.cookie_secure=0"; \
         include fastcgi_params; \
+        fastcgi_param HTTP_HOST $host; \
+        fastcgi_param HTTPS $https; \
+    } \
+    \
+    location ~ /\.(?!well-known).* { \
+        deny all; \
     } \
 }' > /etc/nginx/sites-available/default
 

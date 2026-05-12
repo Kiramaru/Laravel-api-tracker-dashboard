@@ -18,6 +18,21 @@ Route::get('/clear-cache', function() {
     return 'Cache cleared: ' . Artisan::output();
 });
 
+// Тестовый логин без CSRF
+Route::post('/test-login', function (Request $request) {
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required',
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        Auth::login(Auth::user());
+        return redirect('/stats');
+    }
+
+    return back()->withErrors(['email' => 'Invalid credentials']);
+});
+
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 Route::post('/logout', [AuthController::class, 'logout'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
