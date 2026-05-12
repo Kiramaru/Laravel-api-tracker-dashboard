@@ -45,6 +45,18 @@ Route::get('/force-login', function () {
     return 'User not found. Please check database.';
 });
 
+Route::get('/test-geo/{ip?}', function ($ip = null) {
+    $ip = $ip ?? request()->ip();
+    $geoService = app(\App\Contracts\GeoLocationServiceInterface::class);
+    $city = $geoService->getCityByIp($ip);
+
+    return response()->json([
+        'ip' => $ip,
+        'city' => $city,
+        'raw_data' => $geoService->getRawData($ip) // Добавим этот метод
+    ]);
+});
+
 Route::get('/debug-stats', function () {
     $statsService = app(\App\Contracts\StatsServiceInterface::class);
     return response()->json([
