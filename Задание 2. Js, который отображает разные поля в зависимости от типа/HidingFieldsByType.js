@@ -22,22 +22,19 @@ let filter = () => {
 
     let p = document.querySelectorAll('p');
 
-    let target = Array.from(p).find(p => p.querySelector('select[name="type_val"]'));
+    let target = Array.from(p).find(p => p.querySelector('select[name="type_val"]'));//Находим элемент p, в котором есть select для выбора типа
 
-    let val = target?.querySelector('select[name="type_val"]')?.value;//Значение типа
+    if (!target) return;//Если такого элемента нет, прекращаем выполнение функции
 
+    let val = target.querySelector('select[name="type_val"]')?.value;//Значение выбранного типа
 
+    Array.from(p).forEach(p => {
+        if (p === target) return; // Пропускаем элемент, в котором находится select
 
-    Array.from(p).filter(p => p !== target).forEach(p => {//Все элементы p, кроме того, в котором выбор типа
+        let input = p.querySelector('input');//Находим input внутри элемента p
+        let match = input?.name ? nums(input.name).includes(val) : false;//Проверяем, содержит ли имя input выбранное значение типа (после извлечения цифр)
 
-        let text = p.querySelector('input[type="text"]');//Элемент с полем
-        let button = p.querySelector('input[type="button"]');//Элемент с кнопкой
-
-        let match = (text && nums(text.previousSibling?.nodeValue) === val) ||
-            (button && nums(button.value) === val);
-        //Если кнопка, то проверка совпадения цифрам в тексте внутри тега p, если кнопка, то по значению 
-
-        p.style.display = match ? '' : 'none';
+        p.style.display = match ? '' : 'none';//Если совпало, показываем элемент, иначе скрываем
     });
 
 };
