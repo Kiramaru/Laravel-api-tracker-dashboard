@@ -96,9 +96,9 @@
     </div>
 
     <script>
-        let hourlyChart, citiesChart;
-        
-        async function loadData() {
+    let hourlyChart, citiesChart;
+    
+    async function loadData() {
         const token = document.querySelector('meta[name="csrf-token"]').content;
     
         try {
@@ -140,8 +140,11 @@
         } catch (error) {
             console.error('Error loading stats:', error);
         }
-        
+    }
+    
+        // Запускаем загрузку данных после загрузки страницы
         document.addEventListener('DOMContentLoaded', loadData);
-    </script>
+
+</script>
 </body>
 </html>
