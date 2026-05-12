@@ -12,13 +12,20 @@ class VisitRepository implements VisitRepositoryInterface
     public function getHourlyStats(int $hours): Collection//Получить почасовую статистику посещений
     {
         return Visit::select(
-            DB::raw('DATE_FORMAT(created_at, "%Y-%m-%d %H:00") as hour'),
+            DB::raw("datetime(created_at, 'start of hour') as hour"),
             DB::raw('COUNT(DISTINCT ip) as unique_visits')
         )
-            ->groupBy('hour')
+            ->whereNotNull('created_at')
+            ->groupBy(DB::raw("datetime(created_at, 'start of hour')"))
             ->orderBy('hour', 'desc')
             ->limit($hours)
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return (object) [
+                    'hour' => $item->hour,
+                    'unique_visits' => $item->unique_visits
+                ];
+            });
     }
 
 
