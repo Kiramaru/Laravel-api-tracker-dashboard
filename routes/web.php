@@ -53,7 +53,6 @@ Route::get('/test-geo/{ip?}', function ($ip = null) {
     return response()->json([
         'ip' => $ip,
         'city' => $city,
-        'raw_data' => $geoService->getRawData($ip) // Добавим этот метод
     ]);
 });
 
