@@ -20,19 +20,20 @@ class GeoLocationService implements GeoLocationServiceInterface
 
     public function getCityByIp(string $ip): ?string //Получение города по ip
     {
-        if ($ip === '127.0.0.1' || str_starts_with($ip, '10.') || str_starts_with($ip, '172.')) {
-            return 'Тестовый город';
-        }
-        
-        try {
-            $response = Http::timeout($this->timeout)
-                ->retry($this->retries, 100)
-                ->get($this->apiUrl . $ip);//Запрос для получения города
 
-            if ($response->successful() && $response->json('status') === 'success') {
-                return $response->json('city');//Если запрос прошел успешно, то возвращаем город
+        try {
+            $response = Http::timeout($this->timeout)//Запрос на получение города
+                ->retry($this->retries, 100)
+                ->get($this->apiUrl . $ip);
+
+            if ($response->successful() && $response->json('status') === 'success') {//Если успешно
+                $city = $response->json('city');
+                if ($city && $city !== '') {
+                    $city = mb_convert_encoding($city, 'UTF-8', 'auto');//Кодировка
+                    return $city;
+                }
             }
-        } catch (\Exception $e) {//Ошибка
+        } catch (\Exception $e) {
             \Log::warning('GeoLocationService error: ' . $e->getMessage(), [
                 'ip' => $ip,
                 'api_url' => $this->apiUrl

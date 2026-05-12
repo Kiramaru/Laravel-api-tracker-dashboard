@@ -33,11 +33,26 @@ class VisitRepository implements VisitRepositoryInterface
     {
         $stats = Visit::select('city', DB::raw('COUNT(*) as count'))
             ->whereNotNull('city')
+            ->where('city', '!=', '')
+            ->where('city', '!=', 'Неизвестный город')
             ->groupBy('city')
             ->orderBy('count', 'desc')
             ->limit($limit)
             ->get();
 
+        $stats = $stats->map(function ($item) {
+            // Очищаем название города от возможных проблемных символов
+            $city = $item->city;
+            $city = preg_replace('/[^\p{L}\s\-]/u', '', $city);
+            $city = mb_convert_encoding($city, 'UTF-8', 'UTF-8');
+
+            return (object) [
+                'city' => $city ?: 'Город',
+                'count' => $item->count
+            ];
+        });
+
+        // Если реальных данных нет, показываем демо-данные
         if ($stats->isEmpty()) {
             return collect([
                 (object) ['city' => 'Москва', 'count' => 5],
