@@ -21,6 +21,10 @@ class GeoLocationService implements GeoLocationServiceInterface
     public function getCityByIp(string $ip): ?string //Получение города по ip
     {
 
+        if ($this->isLocalIp($ip)) {
+            return 'Local';
+        }
+        
         try {
             $response = Http::timeout($this->timeout)
                 ->retry($this->retries, 100)
@@ -49,5 +53,14 @@ class GeoLocationService implements GeoLocationServiceInterface
 
         return 'Unknown';
     
+    }
+
+    private function isLocalIp(string $ip): bool
+    {
+        return $ip === '127.0.0.1' ||
+            $ip === '::1' ||
+            str_starts_with($ip, '192.168.') ||
+            str_starts_with($ip, '10.') ||
+            str_starts_with($ip, '172.16.');
     }
 }
