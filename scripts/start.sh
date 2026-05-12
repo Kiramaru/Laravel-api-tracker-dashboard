@@ -71,6 +71,10 @@ php artisan migrate --force
 php artisan config:clear
 php artisan config:cache
 
+# Удаляем старые сессии
+rm -rf /var/www/html/storage/framework/sessions/*
+chmod -R 777 /var/www/html/storage/framework/sessions
+
 php artisan tinker --execute="echo 'Session test';"
 
 # Запуск серверов

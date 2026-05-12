@@ -33,6 +33,18 @@ Route::post('/test-login', function (Request $request) {
     return back()->withErrors(['email' => 'Invalid credentials']);
 });
 
+// ВРЕМЕННЫЙ МАРШРУТ ДЛЯ ОБХОДА ПРОБЛЕМ С СЕССИЯМИ
+Route::get('/force-login', function () {
+    $user = \App\Models\User::where('email', 'kiramaru@example.com')->first();
+
+    if ($user) {
+        Auth::login($user);
+        return redirect('/stats');
+    }
+
+    return 'User not found. Please check database.';
+});
+
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
 Route::post('/logout', [AuthController::class, 'logout'])->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class]);
