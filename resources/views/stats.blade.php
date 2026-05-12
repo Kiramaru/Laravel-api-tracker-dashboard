@@ -95,64 +95,112 @@
         </div>
     </div>
 
-    <script>
+   <script>
     let hourlyChart, citiesChart;
     
     async function loadData() {
-        const token = document.querySelector('meta[name="csrf-token"]').content;
-    
         try {
+            console.log('Loading stats data...');
+            
             const response = await fetch('/stats/data', {
                 headers: {
-                    'X-CSRF-TOKEN': token,
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 }
             });
         
-            if (response.status === 419) {
-                console.error('CSRF token mismatch, reloading page...');
-                location.reload();
+            if (!response.ok) {
+                console.error('HTTP error:', response.status);
                 return;
             }
         
-            const data = await response.json();
+            const text = await response.text();
+            console.log('Raw response:', text);
+            
+            // Парсим JSON вручную
+            let data;
+            try {
+                data = JSON.parse(text);
+            } catch (e) {
+                console.error('JSON parse error:', e);
+                return;
+            }
+            
+            console.log('Parsed data:', data);
+            
+            // Обновляем счетчики
+            document.getElementById('totalCount').innerText = data.total || 0;
+            document.getElementById('uniqueCount').innerText = data.unique_ips || 0;
         
-            document.getElementById('totalCount').innerText = data.total;
-            document.getElementById('uniqueCount').innerText = data.unique_ips;
-        
+            // Обрабатываем данные по часам
+            const hourlyData = data.hourly || [];
+            const hours = hourlyData.map(h => h.hour || '');
+            const visits = hourlyData.map(h => h.unique_visits || 0);
+            
+            console.log('Hourly data:', hours, visits);
+            
             // График по часам
-            const hours = data.hourly.map(h => h.hour);
-            const visits = data.hourly.map(h => h.unique_visits);
+            const hourlyCanvas = document.getElementById('hourlyChart');
+            if (hourlyCanvas && hours.length > 0) {
+                if (hourlyChart) hourlyChart.destroy();
+                hourlyChart = new Chart(hourlyCanvas, {
+                    type: 'line',
+                    data: { 
+                        labels: hours, 
+                        datasets: [{ 
+                            label: 'Уникальные посещения', 
+                            data: visits, 
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.3
+                        }] 
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true
+                    }
+                });
+                console.log('Hourly chart created');
+            }
         
-            if (hourlyChart) hourlyChart.destroy();
-            hourlyChart = new Chart(document.getElementById('hourlyChart'), {
-                type: 'line',
-                data: { labels: hours, datasets: [{ label: 'Уникальные посещения', data: visits, borderColor: 'blue' }] }
-            });
-
-            let citiesData = data.cities || [];
-
-            // Если городов нет, показываем демо-данные
-            if (citiesData.length === 0) {
-                citiesData = [
-                    { city: 'Нет данных (добавьте тестовые)', count: 1 }
-                ];
-}
-            // Круговая диаграмма по городам
-            if (citiesChart) citiesChart.destroy();
-            citiesChart = new Chart(document.getElementById('citiesChart'), {
-                type: 'pie',
-                data: { labels: data.cities.map(c => c.city), datasets: [{ data: data.cities.map(c => c.count) }] }
-            });
+            // Обрабатываем данные по городам
+            const citiesData = data.cities || [];
+            console.log('Cities data:', citiesData);
+            
+            const citiesCanvas = document.getElementById('citiesChart');
+            if (citiesCanvas && citiesData.length > 0) {
+                if (citiesChart) citiesChart.destroy();
+                citiesChart = new Chart(citiesCanvas, {
+                    type: 'pie',
+                    data: { 
+                        labels: citiesData.map(c => c.city || 'Unknown'), 
+                        datasets: [{ 
+                            data: citiesData.map(c => c.count || 0),
+                            backgroundColor: ['rgb(59, 130, 246)', 'rgb(34, 197, 94)', 'rgb(249, 115, 22)', 'rgb(168, 85, 247)', 'rgb(236, 72, 153)']
+                        }] 
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+                console.log('Cities chart created');
+            }
+            
         } catch (error) {
             console.error('Error loading stats:', error);
         }
     }
     
-        // Запускаем загрузку данных после загрузки страницы
+    // Запускаем после загрузки страницы
+    if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', loadData);
-
+    } else {
+        loadData();
+    }
 </script>
 </body>
 </html>
