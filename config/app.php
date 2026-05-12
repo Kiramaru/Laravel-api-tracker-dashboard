@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://pokemon-stats-app-2q75.onrender.com'),
 
     /*
     |--------------------------------------------------------------------------
